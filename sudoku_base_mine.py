@@ -60,10 +60,13 @@ def solve_puzzle(n, puzzle):
     # Check if solution is unique
     
     # Create constraint for one empty cell having a different value
+    BigOr = []
     for i in range(n*n):
       for j in range(n*n):
         if puzzle[i][j] == ".": 
-          s.add( grid[i][j] != solution[i][j] )
+          BigOr.append(grid[i][j] != solution[i][j])
+
+    s.add(Or(BigOr))
         
     # Check if s still has a solution
     if s.check() == sat:
