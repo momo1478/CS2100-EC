@@ -14,36 +14,40 @@ def tryCastInt(val):
 # n is the length of a sub-grid and puzzle is the provided puzzle
 def solve_puzzle(n, puzzle):
   # Declare the grid for Z3
-  grid = [[Int("X{0}_{1}".format(i, j)) for i in range(n*n)] for j in range(n*n)]
+  grid = [[Int("X{0}_{1}".format(i, j)) for i in range(n)] for j in range(n)]
 
   # Create a solver instance for Z3
   s = Solver()
 
   # Add constraint that each cell is in [1,9]
-  for i in range(n*n):
-    for j in range(n*n):
-      s.add(And(1 <= grid[i][j], grid[i][j] <= (n*n) ))
+  for i in range(n):
+    for j in range(n):
+      s.add(And(1 <= grid[i][j], grid[i][j] <= (n) ))
 
   # Add rule for rows having distinct values
-  for r in range(n*n):
-    s.add(Distinct([grid[r][c] for c in range(n*n)]))
+  for r in range(n):
+    s.add(Distinct([grid[r][c] for c in range(n)]))
 
   # Add rule for columns being distinct
-  for c in range(n*n):
-    s.add(Distinct([grid[r][c] for r in range(n*n)]))
+  for c in range(n):
+    s.add(Distinct([grid[r][c] for r in range(n)]))
 
   #Add operation constraints
+  #For each "grid rule"
   for i in range (0,len(puzzle)):
     if puzzle[i][1] == "+":
-      s.add(Sum(grid[ puzzle[i][2*k] ][ puzzle[i][2*k + 1] ] for k in range (2*i , len(puzzle[i]) , 2) ) == puzzle[i][0])
+      s.add( Sum( grid[ puzzle[i][2*k] ][ puzzle[i][2*k + 1] ] for k in range (2*i , len(puzzle[i]) , 2) ) == puzzle[i][0] )
     elif puzzle[i][1] == "*":
-      s.add(Product(grid[ puzzle[i][2*k] ][ puzzle[i][2*k + 1] ] for k in range (2*i , len(puzzle[i]) , 2) ) == puzzle[i][0])
+      s.add( Product( grid[ puzzle[i][2*o] ][ puzzle[i][2*o + 1] ] for o in range (2*i , len(puzzle[i]) , 2) ) == puzzle[i][0] )
     elif puzzle[i][1] == "/":
       s.add( Or( grid[ puzzle[i][2] ][ puzzle[i][3] ] / grid[ puzzle[i][4] ][ puzzle[i][5] ] == puzzle[i][0] ,
                  grid[ puzzle[i][4] ][ puzzle[i][5] ] / grid[ puzzle[i][2] ][ puzzle[i][3] ] == puzzle[i][0]) )
     elif puzzle[i][1] == "-":
       s.add( Or( grid[ puzzle[i][2] ][ puzzle[i][3] ] - grid[ puzzle[i][4] ][ puzzle[i][5] ] == puzzle[i][0] ,
-                 grid[ puzzle[i][4] ][ puzzle[i][5] ] - grid[ puzzle[i][2] ][ puzzle[i][3] ] == puzzle[i][0]) )  
+                 grid[ puzzle[i][4] ][ puzzle[i][5] ] - grid[ puzzle[i][2] ][ puzzle[i][3] ] == puzzle[i][0]) )
+    elif puzzle[i][1] == "g":
+      s.add( grid[ puzzle[i][2] ][ puzzle [i][3] ] == puzzle[i][0] )
+
   # Give Z3 our puzzle
   for i in range(n):
     for j in range(n):
@@ -52,32 +56,24 @@ def solve_puzzle(n, puzzle):
         continue
       # Otherwise, add a constraint that this
       # square == the puzzle square
-      print(i)
-      print(j)
-      s.add( grid[i][j] == puzzle[i][j] )
+      # s.add( grid[i][j] == puzzle[i][j] )
 
   # Check if Z3 can solve the puzzle
   if s.check() == sat:
     # Get Z3's solution
     m = s.model()
     # Extract the solution into a python matrix
-    solution = [[0 for i in range(n*n)] for j in range(n*n)]
-    for i in range(n*n):
-      for j in range(n*n):
+    solution = [[0 for i in range(n)] for j in range(n)]
+    for i in range(n):
+      for j in range(n):
         solution[i][j] = int(str(m.eval(grid[i][j])))
 
     # Print solution
-    for i in range(n*n):
+    for i in range(n):
       row = ""
-      for j in range(n*n):
+      for j in range(n):
         row = row + str(solution[i][j]) + " "
       print(row)
-        
-    # Check if s still has a solution
-    if s.check() == sat:
-      print("The solution is not unique")
-    else:
-      print("The solution is unique")
   else:
     print("No solution")
 
