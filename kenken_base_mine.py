@@ -35,10 +35,15 @@ def solve_puzzle(n, puzzle):
   #Add operation constraints
   #For each "grid rule"
   for i in range (0,len(puzzle)):
+    tempArr = []
     if puzzle[i][1] == "+":
-      s.add( Sum( grid[ puzzle[i][2*k] ][ puzzle[i][2*k + 1] ] for k in range (2*i , len(puzzle[i]) , 2) ) == puzzle[i][0] )
+      for o in range (1 , len(puzzle[i])/2):
+        tempArr.append( grid[ puzzle[i][2*o] ][ puzzle[i][2*o + 1] ])
+      s.add( Sum( tempArr ) == puzzle[i][0] )
     elif puzzle[i][1] == "*":
-      s.add( Product( grid[ puzzle[i][2*o] ][ puzzle[i][2*o + 1] ] for o in range (2*i , len(puzzle[i]) , 2) ) == puzzle[i][0] )
+      for o in range (1 , len(puzzle[i])/2):
+        tempArr.append( grid[ puzzle[i][2*o] ][ puzzle[i][2*o + 1] ])
+      s.add( Product( tempArr ) == puzzle[i][0] )
     elif puzzle[i][1] == "/":
       s.add( Or( grid[ puzzle[i][2] ][ puzzle[i][3] ] / grid[ puzzle[i][4] ][ puzzle[i][5] ] == puzzle[i][0] ,
                  grid[ puzzle[i][4] ][ puzzle[i][5] ] / grid[ puzzle[i][2] ][ puzzle[i][3] ] == puzzle[i][0]) )
